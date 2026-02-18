@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.Ruserdata
+*.Rdata
+AtlantisGOAV0_02357/
+AtlantisGOAV0_02364/
+AtlantisGOA_SS/
+AtlantisGOA_Topic2/atlantisMerged.pc
+hydro_forcings_hindcast_revised/
+statevar_plots_hindcast_climatology/

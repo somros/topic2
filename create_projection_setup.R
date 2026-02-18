@@ -32,7 +32,7 @@ other_fmp_grp <- c("ATF", "FHS", "REX", "FFS", "FFD", "SKL", "SKB", "SKO", "RFS"
 oy_grp <- c(hcr_grp, other_fmp_grp) # halibut is not a OY group
 
 # begin from the SS model that is used to run the F ramps and determine the reference points
-# that model had been built on run 2303, and it uses 1990s mFC values and 1990s climatologies
+# that model had been built on run 2357, and it uses 1990s mFC values and 1990s climatologies
 ss_model <- "AtlantisGOA_SS/"
 
 # copy to a new model
@@ -149,7 +149,7 @@ writeLines(harvest_base, "AtlantisGOA_Topic2/GOA_harvest_Frecent.prm")
 # create zero-fishing variant: set all mFCchange_mult values to 0
 harvest_nofishing <- harvest_base
 harvest_nofishing[grep("mFCchange_mult_", harvest_nofishing) + 1] <- "0"
-writeLines(harvest_nofishing, "AtlantisGOA_Topic2/GOA_harvest_template_F0.prm")
+writeLines(harvest_nofishing, "AtlantisGOA_Topic2/GOA_harvest_F0.prm")
 
 # Force.prm ---------------------------------------------------------------
 # 4 climate scenarios
@@ -257,4 +257,49 @@ for(i in 1:length(scenarios)){
   }
   
   writeLines(this_force, filename)
+}
+
+# sh files ----------------------------------------------------------------
+
+# now build 8 sh files that will be used to launch these runs
+# Create shell scripts for all combinations of harvest and force files
+
+# Define force files
+force_files <- c("GOA_force_ssphind.prm", "GOA_force_ssp126.prm", "GOA_force_ssp245.prm", 
+                 "GOA_force_ssp585.prm")
+
+harvest_files <- c("GOA_harvest_F0", "GOA_harvest_Frecent")
+
+# Create all combinations
+combinations <- expand.grid(
+  harvest_file = harvest_files,
+  force_file = force_files,
+  stringsAsFactors = FALSE
+)
+
+# Add run numbers (000-07)
+combinations$run_id <- sprintf("%03d", 0:(nrow(combinations) - 1))
+
+write.csv(combinations, "key.csv", row.names = F)
+
+# Create shell scripts for each combination
+for (i in 1:nrow(combinations)) {
+  run_id <- combinations$run_id[i]
+  harvest <- combinations$harvest_file[i]
+  force <- combinations$force_file[i]
+  
+  # Create shell script content matching the example format
+  sh_content <- paste0(
+    "atlantisMerged -i GOA_cb_summer.nc  0 -o outputGOA_", run_id, ".nc ",
+    "-r GOA_run.prm -f ", force, " -p GOA_physics.prm -b GOAbioparam.prm ",
+    "-h ", harvest, " -m GOAMigrations.csv -s GOA_Groups.csv ",
+    "-q GOA_fisheries.csv -d outputFolder", run_id, "\n"
+  )
+  
+  # Write shell script file
+  sh_filename <- paste0("AtlantisGOA_Topic2/run_atlantis_", run_id, ".sh")
+  writeLines(sh_content, sh_filename)
+  
+  # Make it executable (on Unix-like systems)
+  Sys.chmod(sh_filename, mode = "0755")
 }

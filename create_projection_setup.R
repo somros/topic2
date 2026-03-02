@@ -183,7 +183,7 @@ for(i in 1:length(scenarios)){
     } else if(j <= burnin_t){
       string <- paste0("hd", j-1, ".name forcings/hydro/goa_hydro_1999.nc")
     } else {
-      string <- paste0("hd", j-1, ".name forcings_proj/ssp", clim, "/hydro/goa_hydro_", yr, ".nc")
+      string <- paste0("hd", j-1, ".name ../../goa_calibration_runs/forcings_proj/ssp", clim, "/hydro/goa_hydro_", yr, ".nc")
       yr <- yr + 1
     }
     h_section <- c(h_section, string)
@@ -206,7 +206,7 @@ for(i in 1:length(scenarios)){
     } else if(clim == "hind"){
       string <- paste0("Temperature", j-1, ".name forcings/temp/mean_hindcast_temperature.nc")
     } else {
-      string <- paste0("Temperature", j-1, ".name forcings_proj/ssp", clim, "/temp/goa_roms_temp_", yr, ".nc")
+      string <- paste0("Temperature", j-1, ".name ../../goa_calibration_runs/forcings_proj/ssp", clim, "/temp/goa_roms_temp_", yr, ".nc")
       yr <- yr + 1
     }
     t_section <- c(t_section, string)
@@ -229,7 +229,7 @@ for(i in 1:length(scenarios)){
     } else if(clim == "hind"){
       string <- paste0("Salinity", j-1, ".name forcings/salt/mean_hindcast_salinity.nc")
     } else {
-      string <- paste0("Salinity", j-1, ".name forcings_proj/ssp", clim, "/salt/goa_roms_salt_", yr, ".nc")
+      string <- paste0("Salinity", j-1, ".name ../../goa_calibration_runs/forcings_proj/ssp", clim, "/salt/goa_roms_salt_", yr, ".nc")
       yr <- yr + 1
     }
     s_section <- c(s_section, string)
@@ -285,7 +285,7 @@ write.csv(combinations, "key.csv", row.names = F)
 # Create shell scripts for each combination
 for (i in 1:nrow(combinations)) {
   run_id <- combinations$run_id[i]
-  harvest <- combinations$harvest_file[i]
+  harvest <- paste0(combinations$harvest_file[i], ".prm")
   force <- combinations$force_file[i]
   
   # Create shell script content matching the example format
@@ -293,7 +293,7 @@ for (i in 1:nrow(combinations)) {
     "atlantisMerged -i GOA_cb_summer.nc  0 -o outputGOA_", run_id, ".nc ",
     "-r GOA_run.prm -f ", force, " -p GOA_physics.prm -b GOAbioparam.prm ",
     "-h ", harvest, " -m GOAMigrations.csv -s GOA_Groups.csv ",
-    "-q GOA_fisheries.csv -d outputFolder", run_id, "\n"
+    "-q GOA_fisheries.csv -d outputFolder", run_id, " 2>outconsole\n"
   )
   
   # Write shell script file
